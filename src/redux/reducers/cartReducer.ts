@@ -1,5 +1,5 @@
 import { ItemsListProps } from "../../interfaces/ItemsListProps";
-import { CartActionTypes } from "../actions/cartActions";
+import { CartActions, CartActionTypes } from "../actions/cartActions";
 import { getFromLocalStorage } from "./reducerHelpers";
 
 const initialState = {
@@ -15,16 +15,6 @@ export type Initial = {
   cartItems: ItemsListProps[];
 };
 
-export type ActionProp = {
-  type: CartActionTypes;
-  payload?: {
-    _id: string;
-    price: number;
-    shippingValue: string;
-  };
-  // payload?: AllCartActionsPayload;
-};
-
 const initialFromLocalStorage = getFromLocalStorage<Initial>(
   "e_Shoes-cart",
   initialState,
@@ -32,15 +22,11 @@ const initialFromLocalStorage = getFromLocalStorage<Initial>(
 
 export const cart = (
   state: Initial = initialFromLocalStorage,
-  action: ActionProp,
+  action: CartActions,
 ) => {
-  const { type, payload } = action;
-
-  switch (type) {
-    //
-    case CartActionTypes.ADD_TO_CART:
-      if (!payload) return state;
-
+  switch (action.type) {
+    case "ADD_TO_CART": {
+      const { payload } = action;
       const ifCartAlreadyContains =
         state.cartItems.filter((item) => item._id === payload._id).length > 0;
       if (ifCartAlreadyContains) return state;
@@ -53,16 +39,15 @@ export const cart = (
         itemCount: state.itemCount + 1,
         total: newTotalFixed,
       };
-
+    }
     case CartActionTypes.CLEAR_CART:
       return {
         cartItems: [],
         itemCount: 0,
         total: 0,
       };
-
-    case CartActionTypes.DELETE_ITEM:
-      if (!payload) return state;
+    case CartActionTypes.DELETE_ITEM: {
+      const { payload } = action;
 
       const [itemToDelete] = state.cartItems.filter(
         (item) => item._id === payload._id,
@@ -79,9 +64,9 @@ export const cart = (
           ...state.cartItems.filter((item) => item._id !== payload._id),
         ],
       };
-
-    case CartActionTypes.INCREASE_QUANTITY:
-      if (!payload) return state;
+    }
+    case CartActionTypes.INCREASE_QUANTITY: {
+      const { payload } = action;
 
       const [itemToIncrease] = state.cartItems.filter(
         (item) => item._id === payload._id,
@@ -102,10 +87,10 @@ export const cart = (
         ],
         total: fixedIncreasedTotal,
       };
+    }
+    case CartActionTypes.DECREASE_QUANTITY: {
 
-    case CartActionTypes.DECREASE_QUANTITY:
-      if (!payload) return state;
-
+      const { payload } = action;
       const { _id } = payload;
 
       const [itemToDecrease] = state.cartItems.filter(
@@ -128,15 +113,14 @@ export const cart = (
         ],
         total: fixedDecreasedTotal,
       };
-
-    case CartActionTypes.SET_SHIPPING:
-      if (!payload) return state;
-
+    }
+    case CartActionTypes.SET_SHIPPING: {
+      const {payload} = action;
       return {
         ...state,
         shipping: parseFloat(payload.shippingValue.replace(",", ".")),
       };
-
+    }
     default:
       break;
   }
